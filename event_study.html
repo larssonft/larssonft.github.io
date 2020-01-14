@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Fredrik Larsson" />
+
+<meta name="date" content="2019-12-28" />
+
+<title>Event Study - Project</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="fama_french.html">Fama French</a>
+</li>
+<li>
+  <a href="event_study.html">Event Study</a>
+</li>
+<li>
+  <a href="portfolio_optimization.html">Portfolio Optimization</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Event Study - Project</h1>
+<h4 class="author"><em>Fredrik Larsson</em></h4>
+<h4 class="date"><em>December 28, 2019</em></h4>
+
+</div>
+
+
+<div id="description" class="section level3">
+<h3>Description:</h3>
+<p>For this particular project, I will investigate whether insider trading occured prior to the announcement of LVMH acquring Tiffany and whether the market follows semi-strong market efficieny theory.</p>
+<p>The benchmark model that I will be using is CAPM.</p>
+</div>
+<div id="comments" class="section level3">
+<h3>Comments:</h3>
+<p>This is a simple form of event study that can be improved in numerous ways, such as implementing a benchmark with more factors (Fama-French) and calculating the standard error of each individual day.</p>
+<p>An event study alone is insufficient to determine insider trading; it should serve as an indicator.</p>
+</div>
+<div id="libraries" class="section level3">
+<h3>Libraries:</h3>
+<p>#Tidyquant; Performance Analytics; xts.</p>
+</div>
+<div id="download-and-fix-data" class="section level3">
+<h3>Download and Fix Data</h3>
+<p>October 25th (after market close) LVMH announced that it will acquire Tiffany at USD135 per share, indicating that Tiffany stock price should be close to USD135 immediately when the market opens.</p>
+<pre class="r"><code>stock &lt;- &quot;TIF&quot; #Stock Ticker
+market &lt;- &quot;SPY&quot; #Market Ticker (Other alternatives might be ETFs focusing on NYSE or NASDAQ)
+event_date &lt;- &quot;2019-10-25&quot; #Date: YYYY-MM-DD
+beg_date &lt;- date(event_date)-150 #150 = Number of trading days before event to create benchmark.  
+end_date &lt;- date(event_date)+15 #15 = Number of trading days after event.
+period &lt;- &quot;daily&quot; #Periodicity
+
+stock_data &lt;- getSymbols.yahoo(Symbols = stock,
+                                   env = .GlobalEnv,
+                                   return.class = &quot;xts&quot;,
+                                   index.class = &quot;Date&quot;,
+                                   from = beg_date,
+                                   to = end_date,
+                                   periodicity = period)
+                               
+market_data &lt;- getSymbols.yahoo(Symbols = market, #The downloading of the stock data can be consolidated.
+                                   env = .GlobalEnv,
+                                   return.class = &quot;xts&quot;,
+                                   index.class = &quot;Date&quot;,
+                                   from = beg_date,
+                                   to = end_date,
+                                   periodicity = period)
+
+#Fix and clean data set. 
+data &lt;- cbind.xts(TIF$TIF.Adjusted, SPY$SPY.Adjusted) #Combine
+names(data) &lt;- c(&quot;TIF&quot;, &quot;SPY&quot;) #Name Columns
+data &lt;- ROC(data) #Convert Adjusted Prices to Daily Returns (ROC = Rate of Change)
+data &lt;- na.omit(data) #Remove any NA/empty rows. 
+head(data)</code></pre>
+<pre><code>##                      TIF          SPY
+## 2019-05-29 -0.0040658049 -0.006733275
+## 2019-05-30 -0.0085144269  0.002727490
+## 2019-05-31 -0.0104934095 -0.013567025
+## 2019-06-03  0.0118251130 -0.002546144
+## 2019-06-04  0.0256200399  0.021474532
+## 2019-06-05 -0.0006488263  0.008624799</code></pre>
+<pre class="r"><code>chart.CumReturns(data, wealth.index = TRUE, main = &quot;Cumulative Returns: Training + Testing Periods&quot;, legend.loc = &quot;topleft&quot;) #Graph to illustrate TIF returns relatively to SPY returns. </code></pre>
+<p><img src="event_study_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="create-benchmark-model-regression" class="section level3">
+<h3>Create Benchmark Model: Regression</h3>
+<p>Regression is based on 140 days before the announcement happened - 10 days. With this regression analysis, we will be able to create a CAPM model, which historically has explained ~70% of actual returns. Conventionally, you remove the risk free rate from ri and rm, but that is not as important when doing an event study.</p>
+<pre class="r"><code>regression_analysis &lt;- lm(TIF ~ SPY, 
+                          data = data[1:(match(date(event_date), table = index(data))-10),])
+#We want to investigate whether there are any abnormal returns shortly before the event. Therefore, we remove 10 days prior to the announcement date (This is when we anticipate insider trading on a larger scale). 
+
+summary(regression_analysis)#Based on the t and p-values, we fail to reject the H0: intercept (alpha) = 0, but we have enough evidence to reject H0: beta = 0. Therefore, we can create a model that states Ri = Beta * Rm.</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = TIF ~ SPY, data = data[1:(match(date(event_date), 
+##     table = index(data)) - 10), ])
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.029795 -0.009811  0.000414  0.009824  0.034124 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.0006902  0.0014005  -0.493    0.623    
+## SPY          1.3194274  0.1515507   8.706 1.03e-13 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.01368 on 94 degrees of freedom
+## Multiple R-squared:  0.4464, Adjusted R-squared:  0.4405 
+## F-statistic:  75.8 on 1 and 94 DF,  p-value: 1.033e-13</code></pre>
+<pre class="r"><code>beta &lt;- regression_analysis$coefficients[2]
+alpha &lt;- regression_analysis$coefficients[1]#Not to be used due to too low T-value.</code></pre>
+</div>
+<div id="comparison-model-vs.actual-returns" class="section level3">
+<h3>Comparison: Model vs. Actual Returns</h3>
+<p>Since we already know the future returns of the market (SPY), we will be utilizing ex-post forecasting, meaning that the independent variable (SPY) is given and not forecasted alongside the dependent variable (TIF).</p>
+<pre class="r"><code>comp.data &lt;- cbind.xts(data[])#Combine Actual and Anticipated returns to one data frame.
+comp.data &lt;- cbind.xts(tail(data[,1],nrow(data) - (match(date(event_date), table = index(data))-9)),
+                     ((tail(data[,2],nrow(data) - (match(date(event_date), table = index(data))-9)))*beta))
+
+names(comp.data) &lt;- c(&quot;Actual&quot;, &quot;Anticipated&quot;)
+plot(comp.data, main = &quot;Daily Returns - Test Period&quot;, legend.loc = &quot;topleft&quot;)</code></pre>
+<p><img src="event_study_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#This Graph does not explain whether there were any abnormal returns.</code></pre>
+</div>
+<div id="abnormal-return-analysis." class="section level3">
+<h3>Abnormal Return Analysis.</h3>
+<p>Abnormal returns will be based on t-test: (Actual Returns - Expected Returns)/Standard Error.</p>
+<div id="insider-trading" class="section level4">
+<h4>Insider Trading:</h4>
+<p>Expectation: Abnormal Returns the days after the announcement, since it was made at market close. Abnormal returns before would suggest insider trading.</p>
+</div>
+<div id="semi-strong-market-efficiency-theory" class="section level4">
+<h4>Semi-Strong Market Efficiency Theory:</h4>
+<p>Expectation: Only abnormal returns on the day after the announcement. Any adjustments thereafter should not occur unless new information arises.</p>
+<pre class="r"><code>t_value &lt;- 1.96 #t-critical value with double tail with an alpha of 0.05 with infinite observations. This might need adjustments if the data-set is considerbly small.  
+residual_standard_error &lt;- summary(regression_analysis)$sigma#Extract S.E. from regression model.
+abnormal_analysis &lt;- cbind.xts(comp.data$Actual,
+                               comp.data$Anticipated,
+                               comp.data$Actual-comp.data$Anticipated,
+                               (comp.data$Actual-comp.data$Anticipated)/residual_standard_error)
+names(abnormal_analysis) &lt;- c(&quot;R&quot;, #Actual Return;
+                              &quot;E(R)&quot;, #Expected Return;
+                              &quot;AR&quot;, #Abnormal Return;
+                              &quot;t-AR&quot;) #t-value of Abnormal Return.
+
+round(abnormal_analysis,3)#Table of </code></pre>
+<pre><code>##                 R   E(R)     AR   t-AR
+## 2019-10-15  0.009  0.013 -0.004 -0.321
+## 2019-10-16  0.004 -0.002  0.006  0.443
+## 2019-10-17  0.002  0.004 -0.002 -0.140
+## 2019-10-18 -0.034 -0.006 -0.029 -2.085
+## 2019-10-21  0.012  0.009  0.003  0.235
+## 2019-10-22  0.015 -0.004  0.020  1.441
+## 2019-10-23  0.016  0.004  0.012  0.891
+## 2019-10-24  0.055  0.002  0.053  3.872
+## 2019-10-25  0.009  0.005  0.004  0.261
+## 2019-10-28  0.275  0.007  0.267 19.541
+## 2019-10-29 -0.023  0.000 -0.022 -1.635
+## 2019-10-30 -0.023  0.004 -0.027 -1.992
+## 2019-10-31  0.005 -0.004  0.009  0.622
+## 2019-11-01  0.020  0.012  0.008  0.558
+## 2019-11-04  0.005  0.005  0.000 -0.019
+## 2019-11-05 -0.027 -0.001 -0.025 -1.831
+## 2019-11-06  0.003  0.000  0.003  0.207
+## 2019-11-07  0.002  0.005 -0.002 -0.157
+## 2019-11-08  0.005  0.003  0.002  0.153</code></pre>
+<pre class="r"><code>abnormal_days &lt;- subset(abnormal_analysis, abs(`t-AR`) &gt; t_value)#Filter out days with no abnormal  
+abnormal_days</code></pre>
+<pre><code>##                      R         E(R)          AR      t-AR
+## 2019-10-18 -0.03432336 -0.005788029 -0.02853533 -2.085272
+## 2019-10-24  0.05514280  0.002154200  0.05298860  3.872238
+## 2019-10-28  0.27481421  0.007416065  0.26739814 19.540608
+## 2019-10-30 -0.02321701  0.004040843 -0.02725785 -1.991917</code></pre>
+</div>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion:</h3>
+<p>Disclosure: I have not looked at specific dates prior to or after the anouncement. These are speculations trying to explain any abnormal returns.</p>
+<p>2019-10-18: As an effort not to be acquired by LVHM, Tiffany might have tried to dilute its outstanding shares so that a potential take-over would become more difficult (Poison Pill). However, this must most likely be announced by the company. Moreover, the absolute t-value is relatively close to t-critical value, providing us with a false-positive.</p>
+<p>2019-10-24: A company can acquire up to 5% of shares before announcing an acqusition, so this would most likely be the case. However, it raises the question why LVMH would do it the day before and not successively over the period of a few weeks. If insider trading was the cause for the abnormal return, a few traders/funds/actors with insufficient funding to affect the market greatly purchased the stocks.</p>
+<p>2019-10-28: The market acted accordingly to semi-strong market efficiency hypothesis.</p>
+<p>2019-10-30: Market might have corrected itself as it overreacted to the announcement (this would be a violation to semi-strong market efficiency). Perhaps LVHM and Tiffany were unable to create anticipated synergies, justifying a decrease in price while S&amp;P500 increased in value. However, as for 2019-10-18, the t-value is close to the t-critical value, so it might not be reliable.</p>
+<p>For 10/18 and 10/30, epsilon might be unusually large, explaining any abnormal returns. On average, we assume epsilon = 0.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

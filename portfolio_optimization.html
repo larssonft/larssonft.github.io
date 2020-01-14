@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Fredrik Larsson" />
+
+<meta name="date" content="2020-01-11" />
+
+<title>Portfolio Optimization</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="fama_french.html">Fama French</a>
+</li>
+<li>
+  <a href="event_study.html">Event Study</a>
+</li>
+<li>
+  <a href="portfolio_optimization.html">Portfolio Optimization</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Portfolio Optimization</h1>
+<h4 class="author"><em>Fredrik Larsson</em></h4>
+<h4 class="date"><em>January 11, 2020</em></h4>
+
+</div>
+
+
+<div id="packages" class="section level3">
+<h3>Packages:</h3>
+<p>Quantmod; PerformanceAnalytics; PortfolioAnalytics; forecast; timeSeries</p>
+</div>
+<div id="download-stock-and-market-data" class="section level3">
+<h3>Download Stock and Market Data</h3>
+<pre class="r"><code>stocks &lt;- c(&quot;AMZN&quot;, &quot;JPM&quot;, &quot;KSS&quot;, &quot;CMG&quot;, &quot;JNJ&quot;, &quot;^TNX&quot;, &quot;SPY&quot;)
+start.date &lt;- &quot;2016-01-01&quot;
+end.date &lt;- &quot;2018-12-31&quot;
+
+stock.data &lt;- getSymbols.yahoo(Symbols = stocks,
+                               env = .GlobalEnv,
+                               return.class = &quot;xts&quot;,
+                               index.class = &quot;Date&quot;,
+                               from = start.date,
+                               to = end.date,
+                               periodicity = &quot;monthly&quot;)</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre class="r"><code>monthly.returns &lt;- cbind.xts(ROC(AMZN$AMZN.Adjusted),
+                             ROC(JPM$JPM.Adjusted),
+                             ROC(KSS$KSS.Adjusted),
+                             ROC(CMG$CMG.Adjusted),
+                             ROC(JNJ$JNJ.Adjusted),
+                             TNX$TNX.Adjusted/1200)#Convert to montly decimal data.
+
+names(monthly.returns) &lt;- stocks[1:6]; monthly.returns &lt;- na.omit(monthly.returns)
+head(round(monthly.returns,3))#Example data.</code></pre>
+<pre><code>##              AMZN    JPM    KSS    CMG   JNJ  ^TNX
+## 2016-02-01 -0.061 -0.049 -0.064  0.117 0.007 0.001
+## 2016-03-01  0.072  0.051 -0.001 -0.078 0.035 0.001
+## 2016-04-01  0.105  0.065 -0.040 -0.112 0.035 0.002
+## 2016-05-01  0.092  0.040 -0.206  0.049 0.005 0.002
+## 2016-06-01 -0.010 -0.049  0.051 -0.093 0.081 0.001
+## 2016-07-01  0.059  0.029  0.106  0.051 0.032 0.001</code></pre>
+<pre class="r"><code>chart.CumReturns(monthly.returns, wealth.index = TRUE, legend.loc = &quot;topleft&quot;)#Total Returns of each asset.</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="construct-a-portfolio" class="section level3">
+<h3>Construct a Portfolio</h3>
+<p>I will construct and compare 2 different portfolios: Equal Weight and Tangency Portfolio.</p>
+<pre class="r"><code>#Equal Weight: 100% / 5 = 20%.
+equal.weights &lt;- c(0.2, 0.2, 0.2, 0.2, 0.2)
+
+#Global Minimum Variance
+
+
+#Tangency Portfolio
+risk.free.rate &lt;- mean(monthly.returns$`^TNX`)#Risk Free Rate to be used.
+cov.mat &lt;- cov(monthly.returns[,1:5]); round(cov.mat,3)# Variance Covariance Matrix.</code></pre>
+<pre><code>##       AMZN   JPM    KSS    CMG    JNJ
+## AMZN 0.006 0.001  0.000  0.002  0.001
+## JPM  0.001 0.003  0.002  0.000  0.001
+## KSS  0.000 0.002  0.009  0.000 -0.001
+## CMG  0.002 0.000  0.000  0.009 -0.001
+## JNJ  0.001 0.001 -0.001 -0.001  0.002</code></pre>
+<pre class="r"><code>risk.premium &lt;- matrix(c(mean(monthly.returns$AMZN), #RP = ri - rf.
+                         mean(monthly.returns$JPM),
+                         mean(monthly.returns$KSS),
+                         mean(monthly.returns$CMG),
+                         mean(monthly.returns$JNJ)), ncol = 1) - risk.free.rate#rf
+risk.premium# Risk Premium Matrix</code></pre>
+<pre><code>##              [,1]
+## [1,]  0.024877110
+## [2,]  0.014466094
+## [3,]  0.010137503
+## [4,] -0.003334162
+## [5,]  0.006373195</code></pre>
+<pre class="r"><code>tangency.weights &lt;- solve(cov.mat, risk.premium)/sum(solve(cov.mat, risk.premium))#Solve for tangency point.
+colnames(tangency.weights) &lt;- &quot;Weights&quot;; round(tangency.weights, 3)</code></pre>
+<pre><code>##      Weights
+## AMZN   0.565
+## JPM    0.348
+## KSS    0.134
+## CMG   -0.150
+## JNJ    0.103</code></pre>
+</div>
+<div id="graph-efficient-frontier" class="section level3">
+<h3>Graph Efficient Frontier</h3>
+<p>Graph Efficient frontier to see how the different portfolios lie relatively to each other.</p>
+<pre class="r"><code>#Generate Random Portfolio using PortfolioAnalytics package.
+portfolio.generation &lt;- portfolio.spec(stocks[1:5])#Add assets&#39; names.
+portfolio.generation &lt;- add.constraint(portfolio.generation, type = &quot;box&quot;, min = -1, max = 1)#Add constraints.
+portfolio.generation &lt;- add.constraint(portfolio = portfolio.generation, type = &quot;full_investment&quot;)
+random.portfolios &lt;- random_portfolios(portfolio.generation, permutations = 2000, rp_method = &quot;grid&quot;)</code></pre>
+<pre><code>## Warning: executing %dopar% sequentially: no parallel backend registered</code></pre>
+<pre class="r"><code>portfolio.returns &lt;- random.portfolios%*%(risk.premium+risk.free.rate)
+portfolio.std &lt;- c()#Create empty list to fill with portfolio standard deviations.
+for(i in (1:nrow(random.portfolios))){
+  portfolio.std &lt;- c(portfolio.std,(random.portfolios[i,]%*%cov.mat%*%matrix(c(random.portfolios[i,])))**(1/2))
+}
+
+equal.weights.std &lt;- (equal.weights%*%cov.mat%*%matrix(c(equal.weights)))**(1/2)
+equal.weights.return &lt;- equal.weights%*%(risk.premium+risk.free.rate)
+
+tangency.std &lt;- (t(tangency.weights)%*%cov.mat%*%tangency.weights)**(1/2)
+tangency.return &lt;- t(tangency.weights)%*%(risk.premium+risk.free.rate)
+
+plot(portfolio.std, portfolio.returns, col = &quot;grey&quot;, xlab = &quot;Std. Dev.&quot;, ylab = &quot;Return&quot;, main = &quot;Efficient Frontier&quot;, xlim = c(0,0.09), ylim = c(-.015, 0.03));grid(); points(c(0, equal.weights.std, tangency.std), c(risk.free.rate, equal.weights.return, tangency.return), col = c(&quot;red&quot;, &quot;green&quot;, &quot;purple&quot;)); points(diag(cov.mat)**(1/2), risk.premium+risk.free.rate, col = &quot;blue&quot;); text(c(0.01,0.02,0.05,0.07), c(0, 0.015, 0.027, 0.017), c(&quot;Risk Free Rate&quot;, &quot;Equal Weights Portfolio&quot;, &quot;Tangency Portfolio&quot;, &quot;Individual Assets&quot;), col = c(&quot;red&quot;, &quot;green&quot;, &quot;purple&quot;, &quot;blue&quot;)); abline(risk.free.rate, ((tangency.return - risk.free.rate)/ tangency.std), col = &quot;purple&quot;)# Graph function looks complicated as I added many features.</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="backtest-how-the-portfolio-performed-relatively-to-spy-2019m1---2019m11." class="section level3">
+<h3>Backtest how the portfolio performed relatively to SPY 2019M1 - 2019M11.</h3>
+<p>Need to download daily data - which will be data used from hereon.</p>
+<pre class="r"><code>start.date &lt;- &quot;2019-01-01&quot;; end.date &lt;- &quot;2019-11-30&quot;
+stock.data &lt;- getSymbols.yahoo(Symbols = stocks,
+                           env = .GlobalEnv,
+                           return.class = &quot;xts&quot;,
+                           index.class = &quot;Date&quot;,
+                           from = start.date,
+                           to = end.date,
+                           periodicity = &quot;daily&quot;)</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre><code>## Warning: ^TNX contains missing values. Some functions will not work if
+## objects contain missing values in the middle of the series. Consider using
+## na.omit(), na.approx(), na.fill(), etc to remove or replace them.</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre class="r"><code>daily.returns &lt;- cbind.xts(ROC(AMZN$AMZN.Adjusted),
+                             ROC(JPM$JPM.Adjusted),
+                             ROC(KSS$KSS.Adjusted),
+                             ROC(CMG$CMG.Adjusted),
+                             ROC(JNJ$JNJ.Adjusted),
+                             ROC(SPY$SPY.Adjusted))   
+daily.returns &lt;- na.omit(daily.returns)#Remove any potential NAs.
+names(daily.returns) &lt;- c(stocks[1:5], stocks[7])
+
+equal.weights.daily.return &lt;- rowSums(daily.returns[,1:5]*0.2)
+tangency.daily.return &lt;- (daily.returns$AMZN*tangency.weights[1]
+                          + daily.returns$JPM*tangency.weights[2]
+                          + daily.returns$KSS*tangency.weights[3]
+                          + daily.returns$CMG*tangency.weights[4]
+                          + daily.returns$JNJ*tangency.weights[5])
+
+portfolios.daily.return &lt;- cbind.xts(equal.weights.daily.return, tangency.daily.return, daily.returns$SPY)
+names(portfolios.daily.return) &lt;- c(&quot;Equal Weight&quot;, &quot;Tangency&quot;, &quot;SPY&quot;)
+
+head(round(portfolios.daily.return,3))#Example data.</code></pre>
+<pre><code>##            Equal Weight Tangency    SPY
+## 2019-01-03       -0.017   -0.023 -0.024
+## 2019-01-04        0.027    0.037  0.033
+## 2019-01-07        0.023    0.012  0.008
+## 2019-01-08        0.016    0.010  0.009
+## 2019-01-09        0.001    0.001  0.005
+## 2019-01-10       -0.005   -0.010  0.004</code></pre>
+<pre class="r"><code>chart.CumReturns(portfolios.daily.return, legend.loc = &quot;topleft&quot;)#Graph cumulative return of each portfolio</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>#We can see that the tangency portfolio seriously underperform the market and only the euqal weight portfolio exceeded the market once in respect to returns. </code></pre>
+</div>
+<div id="estimate-capm-model-for-both-portfolios." class="section level3">
+<h3>Estimate CAPM model for both portfolios.</h3>
+<p>CAPM to be based on daily returns in 2019.</p>
+<pre class="r"><code>risk.free.daily.rate &lt;- mean(na.omit(TNX$TNX.Adjusted)/(100*250))#250 trading days in 1 year
+
+regression.equal.weight &lt;- lm(portfolios.daily.return$`Equal Weight` ~ portfolios.daily.return$SPY,
+                              data = portfolios.daily.return[, c(&quot;Equal Weight&quot;, &quot;SPY&quot;)] -
+                              risk.free.daily.rate)#Remove risk free rate from Port. and SPY returns.
+summary(regression.equal.weight)#t-value is signifcant enough to reject the H0: beta = 0. However, the t-value for alpha is too small to conclude that Ha: a =/= 0.</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = portfolios.daily.return$`Equal Weight` ~ portfolios.daily.return$SPY, 
+##     data = portfolios.daily.return[, c(&quot;Equal Weight&quot;, &quot;SPY&quot;)] - 
+##         risk.free.daily.rate)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.044021 -0.003353  0.000082  0.003551  0.022908 
+## 
+## Coefficients:
+##                               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                 -0.0002745  0.0004569  -0.601    0.549    
+## portfolios.daily.return$SPY  0.9628230  0.0557581  17.268   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.006871 on 228 degrees of freedom
+## Multiple R-squared:  0.5667, Adjusted R-squared:  0.5648 
+## F-statistic: 298.2 on 1 and 228 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>confint(regression.equal.weight)#Confidence Interval.</code></pre>
+<pre><code>##                                    2.5 %       97.5 %
+## (Intercept)                 -0.001174694 0.0006257846
+## portfolios.daily.return$SPY  0.852955933 1.0726901176</code></pre>
+<pre class="r"><code>regression.tangency &lt;- lm(portfolios.daily.return$Tangency ~ portfolios.daily.return$SPY,
+                              data = portfolios.daily.return[, c(&quot;Tangency&quot;, &quot;SPY&quot;)] -
+                              risk.free.daily.rate)
+summary(regression.tangency)#Both t-values are signifcant enough to reject the H0: beta = 0 and H0: a = 0.</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = portfolios.daily.return$Tangency ~ portfolios.daily.return$SPY, 
+##     data = portfolios.daily.return[, c(&quot;Tangency&quot;, &quot;SPY&quot;)] - 
+##         risk.free.daily.rate)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.032036 -0.004218  0.000211  0.004807  0.017646 
+## 
+## Coefficients:
+##                               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                 -0.0009824  0.0004885  -2.011   0.0455 *  
+## portfolios.daily.return$SPY  1.2336017  0.0596196  20.691   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.007347 on 228 degrees of freedom
+## Multiple R-squared:  0.6525, Adjusted R-squared:  0.651 
+## F-statistic: 428.1 on 1 and 228 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>confint(regression.tangency)#Confidence Interval.</code></pre>
+<pre><code>##                                    2.5 %        97.5 %
+## (Intercept)                 -0.001944953 -1.978433e-05
+## portfolios.daily.return$SPY  1.116125877  1.351077e+00</code></pre>
+</div>
+<div id="graph-security-market-line-sml." class="section level3">
+<h3>Graph Security Market Line (SML).</h3>
+<p>Visually we can see that both portfolios’ returns do not provide enough returns for the amount of systematic risk taken on: therefore, following a market portfolio would be better in most instances (unless you are trying to hedge.)</p>
+<pre class="r"><code>plot(c(0,3), c(risk.free.daily.rate, mean(portfolios.daily.return$SPY)*3), type = &quot;l&quot;, xlab = &quot;Beta&quot;, ylab = &quot;Return&quot;); grid(); points(c(regression.equal.weight$coefficients[2], regression.tangency$coefficients[2]), c(mean(portfolios.daily.return$`Equal Weight`), mean(portfolios.daily.return$Tangency)), col = c(&quot;green&quot;, &quot;purple&quot;));text(c(1.1, 1.4), c(0.0006, 0.00015), c(&quot;Equal Weight&quot;, &quot;Tangency&quot;), col = c(&quot;green&quot;, &quot;purple&quot;))</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="calculate-the-cv--sharpe--treynor--and-sortino-ratio." class="section level3">
+<h3>Calculate the CV-, Sharpe-, Treynor-, and Sortino Ratio.</h3>
+<p>Compare to a similarly diverse portfolio. For this comparison, I will use a large cap ETF from Vanguard: VV.</p>
+<pre class="r"><code>Vanguard &lt;- getSymbols.yahoo(Symbols = c(&quot;VV&quot;),
+                           env = .GlobalEnv,
+                           return.class = &quot;xts&quot;,
+                           index.class = &quot;Date&quot;,
+                           from = &quot;2019-01-01&quot;,
+                           to = &quot;2019-11-30&quot;,
+                           periodicity = &quot;daily&quot;)
+
+ratio.comparison.returns &lt;- cbind.xts(portfolios.daily.return, na.omit(ROC(VV$VV.Adjusted)))#Combine data.
+
+#USe functions from PerformanceAnalytics, except for CV Ratio.
+#Create a matrix with all the ratios. Of course, one could have created a for loop or print each function individually. 
+comparison &lt;- matrix(c(SharpeRatio(ratio.comparison.returns$Equal.Weight, Rf = risk.free.daily.rate)[1],#Create a matrix with all results.
+                       SharpeRatio(ratio.comparison.returns$Tangency, Rf = risk.free.daily.rate)[1],
+                       SharpeRatio(ratio.comparison.returns$SPY, Rf = risk.free.daily.rate)[1],
+                       SharpeRatio(ratio.comparison.returns$VV.Adjusted, Rf = risk.free.daily.rate)[1],
+                       TreynorRatio(ratio.comparison.returns$Equal.Weight, ratio.comparison.returns$SPY, Rf = risk.free.daily.rate),
+                       TreynorRatio(ratio.comparison.returns$Tangency, ratio.comparison.returns$SPY, Rf = risk.free.daily.rate),
+                       TreynorRatio(ratio.comparison.returns$SPY, ratio.comparison.returns$SPY, Rf = risk.free.daily.rate),
+                       TreynorRatio(ratio.comparison.returns$VV.Adjusted, ratio.comparison.returns$SPY, Rf = risk.free.daily.rate),
+                       SortinoRatio(ratio.comparison.returns$Equal.Weight, MAR = 0),
+                       SortinoRatio(ratio.comparison.returns$Tangency, MAR = 0),
+                       SortinoRatio(ratio.comparison.returns$SPY, MAR = 0),
+                       SortinoRatio(ratio.comparison.returns$VV.Adjusted, MAR = 0),
+                       StdDev(ratio.comparison.returns$Equal.Weight)/mean(ratio.comparison.returns$Equal.Weight),
+                       StdDev(ratio.comparison.returns$Tangency)/mean(ratio.comparison.returns$Tangency),
+                       StdDev(ratio.comparison.returns$SPY)/mean(ratio.comparison.returns$SPY),
+                       StdDev(ratio.comparison.returns$VV.Adjusted)/mean(ratio.comparison.returns$VV.Adjusted)), ncol = 4)
+
+rownames(comparison) &lt;- c(&quot;Sharpe Ratio&quot;, &quot;Treynor Ratio&quot;, &quot;Sortino Ratio&quot;, &quot;CV Ratio&quot;)
+colnames(comparison) &lt;- c(&quot;Equal Weight&quot;, &quot;Tangency&quot;, &quot;SPY&quot;, &quot;VV&quot;)
+comparison</code></pre>
+<pre><code>##               Equal Weight   Tangency        SPY        VV
+## Sharpe Ratio    0.06262231 0.16883473 0.09495782 14.097984
+## Treynor Ratio   0.01843943 0.03165778 0.03480803 39.371590
+## Sortino Ratio   0.11860032 0.26483572 0.18541164  7.738220
+## CV Ratio        0.11916918 0.26667468 0.18658269  7.705099</code></pre>
+</div>
+<div id="calculate-daily-2-var-value-at-risk-as-percentage-of-mean-return." class="section level3">
+<h3>Calculate Daily 2% VaR (Value at Risk) as percentage of mean return.</h3>
+<p>This calculation can easily be done by using the VaR() function supplied by the PerformanceAnalytics Package.</p>
+<pre class="r"><code>VaR.comparison &lt;- c()
+VaR(ratio.comparison.returns, p = 0.02)</code></pre>
+<pre><code>##     Equal.Weight    Tangency         SPY VV.Adjusted
+## VaR  -0.02803897 -0.02927945 -0.02030782 -0.02026965</code></pre>
+<pre class="r"><code>chart.Histogram(ratio.comparison.returns$Equal.Weight,#Plot Density of Returns.
+                breaks = 50, methods = c(&quot;add.density&quot;, &quot;add.normal&quot;, &quot;add.rug&quot;, &quot;add.risk&quot;), p =0.98, main = &quot;Daily VaR Equal Weight&quot;)</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="r"><code>chart.Histogram(ratio.comparison.returns$Tangency,#Plot Density of Returns. One with more data points may want to use more breaks.
+                breaks = 50, methods = c(&quot;add.density&quot;, &quot;add.normal&quot;, &quot;add.rug&quot;, &quot;add.risk&quot;), p =0.98, main = &quot;Daily VaR Tangency&quot;)</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
+</div>
+<div id="graph-scatter-plot-to-visually-find-any-significant-outliers-and-trends." class="section level3">
+<h3>Graph Scatter Plot to visually find any significant outliers and trends.</h3>
+<p>Scatter Plot will have SPY on X-axis and the other portfolios on the Y-axis. Equal Weight Portfolio conforms quite nicely to the performance of SPY (this was expected due to a beta almost = 1).</p>
+<pre class="r"><code>#Use timeSeries() function to move away from XTS object that has predetermined properties in plot().
+plot(timeSeries(ratio.comparison.returns$SPY), timeSeries(ratio.comparison.returns$Equal.Weight), ylab = &quot;Equal Weight Return&quot;, xlab = &quot;S&amp;P 500 Return&quot;, main = &quot;Equal Weight vs. SP500&quot;); grid(); abline(0,1, col = &quot;red&quot;); abline(0, regression.equal.weight$coefficients[2], col = &quot;green&quot;); text(c(-.022,0.027),c(-.01,.015), c(&quot;Equal Weight Beta Slope&quot;, &quot;Market Beta Slope&quot;), col = c(&quot;green&quot;, &quot;red&quot;))</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>plot(timeSeries(ratio.comparison.returns$SPY), timeSeries(ratio.comparison.returns$Tangency), ylab = &quot;Tangency Return&quot;, xlab = &quot;S&amp;P 500 Return&quot;, main = &quot;Tangency vs. SP500&quot;); grid(); abline(0,1, col = &quot;red&quot;); abline(0, regression.tangency$coefficients[2], col = &quot;green&quot;); text(c(-.02,0.027),c(-.04,.015), c(&quot;Tangency Beta Slope&quot;, &quot;Market Beta Slope&quot;), col = c(&quot;green&quot;, &quot;red&quot;))</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+</div>
+<div id="for-december-i-want-to-hold-a-portfolio-with-0-systematic-risk." class="section level3">
+<h3>For December, I want to hold a Portfolio with 0 Systematic Risk.</h3>
+<p>Create Portfolio with 0 Systematic Risk using data of Portfolios and SPY 2019M1 - 2019M11. Easiest way to get a portfolio with 0 systematic risk is to take a short position in SPY - contrary, you may take a long position in SPY and then short the portfolio (+ = - and - = +). However, someone who wants to devote their time to find a portfolio with 0 systematic risk should search for quant-strategies, as you want to add value - otherwise, just invest in risk free assets.</p>
+<p>We can see that we somewhat succeeded in reducing the systematic risk, given that our beta for each portfolio is close to 0 with a low t-value, suggesting that we fail to reject the H0: beta = 0.</p>
+<pre class="r"><code>start.date &lt;- &quot;2019-12-01&quot;; end.date &lt;- &quot;2019-12-31&quot;
+stock.data &lt;- getSymbols.yahoo(Symbols = stocks,
+                           env = .GlobalEnv,
+                           return.class = &quot;xts&quot;,
+                           index.class = &quot;Date&quot;,
+                           from = start.date,
+                           to = end.date,
+                           periodicity = &quot;daily&quot;)</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre><code>## Warning: ^TNX contains missing values. Some functions will not work if
+## objects contain missing values in the middle of the series. Consider using
+## na.omit(), na.approx(), na.fill(), etc to remove or replace them.</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre class="r"><code>daily.returns &lt;- cbind.xts(ROC(AMZN$AMZN.Adjusted),
+                             ROC(JPM$JPM.Adjusted),
+                             ROC(KSS$KSS.Adjusted),
+                             ROC(CMG$CMG.Adjusted),
+                             ROC(JNJ$JNJ.Adjusted),
+                             ROC(SPY$SPY.Adjusted))
+
+regression.equal.weight$coefficients[2]/1</code></pre>
+<pre><code>## portfolios.daily.return$SPY 
+##                    0.962823</code></pre>
+<pre class="r"><code>equal.weights.daily.return &lt;- rowSums(daily.returns[,1:5]*0.2)-daily.returns$SPY.Adjusted*(regression.equal.weight$coefficients[2])
+# - = Short Position.
+tangency.daily.return &lt;- (daily.returns$AMZN*tangency.weights[1]
+                          + daily.returns$JPM*tangency.weights[2]
+                          + daily.returns$KSS*tangency.weights[3]
+                          + daily.returns$CMG*tangency.weights[4]
+                          + daily.returns$JNJ*tangency.weights[5]) - daily.returns$SPY.Adjusted*(regression.tangency$coefficients[2])
+
+portfolios.daily.return &lt;- cbind.xts(equal.weights.daily.return, tangency.daily.return, daily.returns$SPY)
+names(portfolios.daily.return) &lt;- c(&quot;Equal Weight&quot;, &quot;Tangency&quot;, &quot;SPY&quot;); portfolios.daily.return &lt;- na.omit(portfolios.daily.return)
+head(portfolios.daily.return)</code></pre>
+<pre><code>##             Equal Weight      Tangency          SPY
+## 2019-12-03 -0.0012283595 -0.0028118942 -0.006729140
+## 2019-12-04  0.0001332171 -0.0001868229  0.006151324
+## 2019-12-05  0.0033984816 -0.0062448161  0.001796340
+## 2019-12-06 -0.0023879796 -0.0021779489  0.009092575
+## 2019-12-09  0.0096422804  0.0052083342 -0.003149049
+## 2019-12-10 -0.0029618663 -0.0004023491 -0.001115728</code></pre>
+<pre class="r"><code>chart.CumReturns(portfolios.daily.return, legend.loc = &quot;topleft&quot;, main = &quot;Cumulative Return&quot;)</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>#Still underperformed the S&amp;P500, but that was expected if S&amp;P500 gained value during 2019M12. 
+
+plot(portfolios.daily.return, legend.loc = &quot;topleft&quot;, main = &quot;Daily Returns&quot;)</code></pre>
+<p><img src="portfolio_optimization_files/figure-html/unnamed-chunk-11-2.png" width="672" /></p>
+<pre class="r"><code>regression.equal.weight &lt;- lm(portfolios.daily.return$`Equal Weight` ~ portfolios.daily.return$SPY,
+                              data = portfolios.daily.return[, c(&quot;Equal Weight&quot;, &quot;SPY&quot;)] -
+                              risk.free.daily.rate)#Remove risk free rate from Port. and SPY returns.
+
+regression.tangency &lt;- lm(portfolios.daily.return$Tangency ~ portfolios.daily.return$SPY,
+                              data = portfolios.daily.return[, c(&quot;Tangency&quot;, &quot;SPY&quot;)] -
+                              risk.free.daily.rate)#Remove risk free rate from Port. and SPY returns.
+
+summary(regression.equal.weight); summary(regression.tangency)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = portfolios.daily.return$`Equal Weight` ~ portfolios.daily.return$SPY, 
+##     data = portfolios.daily.return[, c(&quot;Equal Weight&quot;, &quot;SPY&quot;)] - 
+##         risk.free.daily.rate)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.005660 -0.002195 -0.001862  0.001786  0.009802 
+## 
+## Coefficients:
+##                             Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                 0.001008   0.001158   0.871    0.396
+## portfolios.daily.return$SPY 0.006374   0.250352   0.025    0.980
+## 
+## Residual standard error: 0.004634 on 17 degrees of freedom
+## Multiple R-squared:  3.813e-05,  Adjusted R-squared:  -0.05878 
+## F-statistic: 0.0006482 on 1 and 17 DF,  p-value: 0.98</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = portfolios.daily.return$Tangency ~ portfolios.daily.return$SPY, 
+##     data = portfolios.daily.return[, c(&quot;Tangency&quot;, &quot;SPY&quot;)] - 
+##         risk.free.daily.rate)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.008079 -0.003955 -0.001018  0.001030  0.019498 
+## 
+## Coefficients:
+##                              Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                 3.576e-05  1.725e-03   0.021    0.984
+## portfolios.daily.return$SPY 2.678e-01  3.730e-01   0.718    0.483
+## 
+## Residual standard error: 0.006905 on 17 degrees of freedom
+## Multiple R-squared:  0.02943,    Adjusted R-squared:  -0.02767 
+## F-statistic: 0.5154 on 1 and 17 DF,  p-value: 0.4825</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

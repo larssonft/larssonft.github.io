@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Fredrik Larsson" />
+
+
+<title>Fama French</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">My Website</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="fama_french.html">Fama French</a>
+</li>
+<li>
+  <a href="event_study.html">Event Study</a>
+</li>
+<li>
+  <a href="portfolio_optimization.html">Portfolio Optimization</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Fama French</h1>
+<h4 class="author"><em>Fredrik Larsson</em></h4>
+<h4 class="date"><em>1/3/2020</em></h4>
+
+</div>
+
+
+<div id="comment" class="section level3">
+<h3>Comment:</h3>
+<p>For this particular project, I will follow the Fama French model to see how much the market, SMB, and HML affect the returns of a stock. This will be conducted by using regression.</p>
+<p>Fama French model.</p>
+</div>
+<div id="libraries" class="section level3">
+<h3>Libraries:</h3>
+<p>Quantmod</p>
+</div>
+<div id="gather-and-fix-data." class="section level3">
+<h3>Gather and Fix Data.</h3>
+<p>Factors in Fama French: Risk Premium (Market Return - Risk free Rate), HML (Value Premium) (High - Low Book to Market Value), and SMB (Size Premium) (Small - Large Cap). All are returns. For simplicity, I will be using ETFs that follow specific strategies, such as only investing in large cap firms and S&amp;P 500.</p>
+<pre class="r"><code>firm_symbol &lt;- c(&quot;TEX&quot;) #Terex is considered to be mid cap, but quite close to small cap. 
+risk_premium_symbols &lt;- c(&quot;SPY&quot;, &quot;^TNX&quot;) #TNX = 10 Years Treasury Yield
+HML_symbols &lt;- c(&quot;VTV&quot;, &quot;VUG&quot;) #VTV = Vanguard Value Index ETF AND VUG = Vanguard Growth Index ETF (Because Value stocks have higher B/M values than growth stocks)
+SMB_symbols &lt;- c(&quot;VB&quot;, &quot;VV&quot;) #VB = Vanguard Small Cap Index ETF AND VV = Vanguard Large Cap Index ETF
+
+combined &lt;- c(firm_symbol, risk_premium_symbols, HML_symbols, SMB_symbols)
+start.date &lt;- &quot;2017-01-01&quot; #Date interval cannot be too large as the company might go from small to large cap and so on. 
+end.date &lt;- &quot;2019-12-31&quot;
+
+stocks &lt;- getSymbols.yahoo(Symbols = combined,
+                           env = .GlobalEnv,
+                           return.class = &quot;xts&quot;,
+                           index.class = &quot;Date&quot;,
+                           from = start.date,
+                           to = end.date,
+                           periodicity = &quot;daily&quot;)</code></pre>
+<pre><code>## Warning: ^TNX contains missing values. Some functions will not work if
+## objects contain missing values in the middle of the series. Consider using
+## na.omit(), na.approx(), na.fill(), etc to remove or replace them.</code></pre>
+<pre><code>## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols
+## pausing 1 second between requests for more than 5 symbols</code></pre>
+<pre class="r"><code>label &lt;- c(&quot;Terex&quot;, &quot;MRP&quot;, &quot;HML&quot;, &quot;SMB&quot;)
+risk.free.rate &lt;- TNX$TNX.Adjusted/(100*250)#To convert risk free rate to decimals and daily return (assuming 250 trading days in a year.)
+
+data &lt;- cbind.xts(ROC(TEX$TEX.Adjusted)-risk.free.rate, #Want to remove risk free rate, so that we can compare fairly to the factors. 
+                  ROC(SPY$SPY.Adjusted)-risk.free.rate,
+                  ROC(VTV$VTV.Adjusted)-ROC(VUG$VUG.Adjusted),
+                  ROC(VB$VB.Adjusted)-ROC(VV$VV.Adjusted))
+names(data) &lt;- label
+data &lt;- na.omit(data)
+head(round(data, 3))</code></pre>
+<pre><code>##             Terex    MRP    HML    SMB
+## 2017-01-04  0.018  0.006 -0.003  0.010
+## 2017-01-05 -0.028 -0.001 -0.006 -0.007
+## 2017-01-06 -0.007  0.003 -0.007 -0.005
+## 2017-01-09 -0.005 -0.003 -0.005 -0.003
+## 2017-01-10  0.017  0.000  0.000  0.007
+## 2017-01-11  0.007  0.003  0.003  0.000</code></pre>
+<pre class="r"><code>chart.CumReturns(data, legend.loc = &quot;topleft&quot;, main = &quot;Cumulative Return - Each Factor&quot;)</code></pre>
+<p><img src="fama_french_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="regression-analysis" class="section level3">
+<h3>Regression Analysis:</h3>
+<p>All t-values are significant except for the intercept (alpha), justifying us to exclude it from any model.</p>
+<pre class="r"><code>training.data &lt;- data[1:(nrow(data)-29)]
+testing.data &lt;- data[(nrow(data)-29):(nrow(data))] #Test for last 30 trading days in 2019.
+
+regression &lt;- lm(Terex ~ MRP + HML + SMB, data = training.data)
+summary(regression) #These 3 factors can explain about 40% of variation in Terex Returns (Adjusted R-Square) and on average the predicted return is +1.7% away from actual value, which is quite significant when looking at stock returns. </code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Terex ~ MRP + HML + SMB, data = training.data)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.151679 -0.008415  0.000868  0.009706  0.074903 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.0003900  0.0006648  -0.587    0.558    
+## MRP          1.7289518  0.0881780  19.608  &lt; 2e-16 ***
+## HML          0.6794490  0.1572980   4.320 1.79e-05 ***
+## SMB          1.5371570  0.1768356   8.693  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.01771 on 711 degrees of freedom
+## Multiple R-squared:  0.4087, Adjusted R-squared:  0.4062 
+## F-statistic: 163.8 on 3 and 711 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>accuracy(regression)</code></pre>
+<pre><code>##                         ME       RMSE        MAE      MPE     MAPE
+## Training set -6.599038e-20 0.01766081 0.01246183 33.80034 189.3361
+##                   MASE
+## Training set 0.7258859</code></pre>
+</div>
+<div id="forecasting-ex-post-we-know-the-outcome-of-the-independent-variables" class="section level3">
+<h3>Forecasting: Ex Post (We know the outcome of the independent variables)</h3>
+<p>Test for last 31 trading days in 2019 of how well the model did.</p>
+<pre class="r"><code>predicted.returns &lt;- (regression$coefficients[2]*testing.data$MRP + regression$coefficients[3]*testing.data$HML + regression$coefficients[4]*testing.data$SMB)
+model.test &lt;- cbind.xts(testing.data$Terex, predicted.returns)
+names(model.test) &lt;- c(&quot;Actual Return&quot;, &quot;Predicted Return&quot;)
+head(round(model.test,3))</code></pre>
+<pre><code>##            Actual Return Predicted Return
+## 2019-11-13        -0.030           -0.006
+## 2019-11-14        -0.019           -0.001
+## 2019-11-15         0.011            0.013
+## 2019-11-18        -0.025           -0.004
+## 2019-11-19        -0.017           -0.001
+## 2019-11-20        -0.020           -0.006</code></pre>
+<pre class="r"><code>plot(model.test, legend.loc = &quot;topright&quot;, main = &quot;Daily Return&quot;)</code></pre>
+<p><img src="fama_french_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="regression-with-lag-1-day-copy-most-of-the-code-from-previous-example" class="section level3">
+<h3>Regression with Lag 1 Day (Copy most of the code from previous example)</h3>
+<p>We will lag all the indepdent variables by 1 day to see whether we can predict the TEX future stock return based on “old”/historical data. We expect a much worse outcome.</p>
+<pre class="r"><code>lagged.data &lt;- cbind.xts(data$Terex, lag(data[,2:4]))
+head(lagged.data)</code></pre>
+<pre><code>##                   Terex           MRP           HML          SMB
+## 2017-01-04  0.017590530            NA            NA           NA
+## 2017-01-05 -0.027536561  0.0058334552 -0.0029048361  0.009727893
+## 2017-01-06 -0.006757885 -0.0008896169 -0.0057541363 -0.007415638
+## 2017-01-09 -0.004880706  0.0034747403 -0.0065927791 -0.005129353
+## 2017-01-10  0.017340685 -0.0034012993 -0.0050970827 -0.002621108
+## 2017-01-11  0.007107410 -0.0000951600 -0.0004574371  0.006806801</code></pre>
+<pre class="r"><code>lagged.data &lt;- na.omit(lagged.data)
+
+training.data &lt;- lagged.data[1:(nrow(data)-29),]
+testing.data &lt;- lagged.data[(nrow(data)-29):(nrow(data)-1),] #Test for last 30 trading days in 2019. Also account for that 1 day that became NA at the end of data set. 
+
+regression &lt;- lm(Terex ~ MRP + HML + SMB, data = training.data)
+summary(regression) #The 3 factors lagged by 1 day can only explain about .6% of variation in Terex Returns (Adjusted R-Square) and on average the predicted return is +2.2% away from actual value, which is quite significant when looking at stock returns. This is obviously a bad model to be using in forecasting. Moreover, only HML has a high enough t-value so that we can reject the H0: Beta_HML = 0. In the forecasting, this will therefore be the only indepdendent variable we can use. </code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = Terex ~ MRP + HML + SMB, data = training.data)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -0.138475 -0.012546  0.000965  0.013765  0.079516 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept) -5.486e-05  8.602e-04  -0.064   0.9492  
+## MRP          2.363e-02  1.141e-01   0.207   0.8360  
+## HML          5.207e-01  2.035e-01   2.558   0.0107 *
+## SMB         -1.165e-01  2.288e-01  -0.509   0.6108  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.02291 on 711 degrees of freedom
+## Multiple R-squared:  0.01032,    Adjusted R-squared:  0.006145 
+## F-statistic: 2.472 on 3 and 711 DF,  p-value: 0.06068</code></pre>
+<pre class="r"><code>accuracy(regression)</code></pre>
+<pre><code>##                        ME       RMSE        MAE      MPE     MAPE     MASE
+## Training set 1.359044e-19 0.02285005 0.01717961 105.6688 117.2949 1.000419</code></pre>
+<pre class="r"><code>predicted.returns &lt;- (regression$coefficients[3]*testing.data$HML)
+model.test &lt;- cbind.xts(testing.data$Terex, predicted.returns)
+names(model.test) &lt;- c(&quot;Actual Return&quot;, &quot;Predicted Return&quot;)
+head(round(model.test,3))</code></pre>
+<pre><code>##            Actual Return Predicted Return
+## 2019-11-14        -0.019           -0.002
+## 2019-11-15         0.011           -0.002
+## 2019-11-18        -0.025            0.000
+## 2019-11-19        -0.017           -0.001
+## 2019-11-20        -0.020           -0.002
+## 2019-11-21         0.000            0.000</code></pre>
+<pre class="r"><code>plot(model.test, legend.loc = &quot;topright&quot;, main = &quot;Daily Return&quot;)#Visually we can see that this is a very poor model. </code></pre>
+<p><img src="fama_french_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

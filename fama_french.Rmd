@@ -1,0 +1,105 @@
+---
+title: "Fama French"
+author: "Fredrik Larsson"
+date: "1/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Comment:
+For this particular project, I will follow the Fama French model to see how much the market, SMB, and HML affect the returns of a stock. This will be conducted by using regression.
+
+Fama French model. 
+
+### Libraries:
+Quantmod
+```{r, include = FALSE}
+library(quantmod)
+library(PerformanceAnalytics)
+library(forecast)
+```
+
+### Gather and Fix Data.
+Factors in Fama French: Risk Premium (Market Return - Risk free Rate), HML (Value Premium) (High - Low Book to Market Value), and SMB (Size Premium) (Small - Large Cap). All are returns. For simplicity, I will be using ETFs that follow specific strategies, such as only investing in large cap firms and S&P 500. 
+```{r}
+firm_symbol <- c("TEX") #Terex is considered to be mid cap, but quite close to small cap. 
+risk_premium_symbols <- c("SPY", "^TNX") #TNX = 10 Years Treasury Yield
+HML_symbols <- c("VTV", "VUG") #VTV = Vanguard Value Index ETF AND VUG = Vanguard Growth Index ETF (Because Value stocks have higher B/M values than growth stocks)
+SMB_symbols <- c("VB", "VV") #VB = Vanguard Small Cap Index ETF AND VV = Vanguard Large Cap Index ETF
+
+combined <- c(firm_symbol, risk_premium_symbols, HML_symbols, SMB_symbols)
+start.date <- "2017-01-01" #Date interval cannot be too large as the company might go from small to large cap and so on. 
+end.date <- "2019-12-31"
+
+stocks <- getSymbols.yahoo(Symbols = combined,
+                           env = .GlobalEnv,
+                           return.class = "xts",
+                           index.class = "Date",
+                           from = start.date,
+                           to = end.date,
+                           periodicity = "daily")
+
+label <- c("Terex", "MRP", "HML", "SMB")
+risk.free.rate <- TNX$TNX.Adjusted/(100*250)#To convert risk free rate to decimals and daily return (assuming 250 trading days in a year.)
+
+data <- cbind.xts(ROC(TEX$TEX.Adjusted)-risk.free.rate, #Want to remove risk free rate, so that we can compare fairly to the factors. 
+                  ROC(SPY$SPY.Adjusted)-risk.free.rate,
+                  ROC(VTV$VTV.Adjusted)-ROC(VUG$VUG.Adjusted),
+                  ROC(VB$VB.Adjusted)-ROC(VV$VV.Adjusted))
+names(data) <- label
+data <- na.omit(data)
+head(round(data, 3))
+
+chart.CumReturns(data, legend.loc = "topleft", main = "Cumulative Return - Each Factor")
+```
+
+### Regression Analysis:
+All t-values are significant except for the intercept (alpha), justifying us to exclude it from any model.
+```{r}
+training.data <- data[1:(nrow(data)-29)]
+testing.data <- data[(nrow(data)-29):(nrow(data))] #Test for last 30 trading days in 2019.
+
+regression <- lm(Terex ~ MRP + HML + SMB, data = training.data)
+summary(regression) #These 3 factors can explain about 40% of variation in Terex Returns (Adjusted R-Square) and on average the predicted return is +1.7% away from actual value, which is quite significant when looking at stock returns. 
+
+accuracy(regression)
+```
+
+### Forecasting: Ex Post (We know the outcome of the independent variables)
+Test for last 31 trading days in 2019 of how well the model did. 
+```{r}
+predicted.returns <- (regression$coefficients[2]*testing.data$MRP + regression$coefficients[3]*testing.data$HML + regression$coefficients[4]*testing.data$SMB)
+model.test <- cbind.xts(testing.data$Terex, predicted.returns)
+names(model.test) <- c("Actual Return", "Predicted Return")
+head(round(model.test,3))
+plot(model.test, legend.loc = "topright", main = "Daily Return")
+```
+
+### Regression with Lag 1 Day (Copy most of the code from previous example)
+We will lag all the indepdent variables by 1 day to see whether we can predict the TEX future stock return based on "old"/historical data. We expect a much worse outcome. 
+```{r}
+lagged.data <- cbind.xts(data$Terex, lag(data[,2:4]))
+head(lagged.data)
+lagged.data <- na.omit(lagged.data)
+
+training.data <- lagged.data[1:(nrow(data)-29),]
+testing.data <- lagged.data[(nrow(data)-29):(nrow(data)-1),] #Test for last 30 trading days in 2019. Also account for that 1 day that became NA at the end of data set. 
+
+regression <- lm(Terex ~ MRP + HML + SMB, data = training.data)
+summary(regression) #The 3 factors lagged by 1 day can only explain about .6% of variation in Terex Returns (Adjusted R-Square) and on average the predicted return is +2.2% away from actual value, which is quite significant when looking at stock returns. This is obviously a bad model to be using in forecasting. Moreover, only HML has a high enough t-value so that we can reject the H0: Beta_HML = 0. In the forecasting, this will therefore be the only indepdendent variable we can use. 
+
+accuracy(regression)
+
+
+predicted.returns <- (regression$coefficients[3]*testing.data$HML)
+model.test <- cbind.xts(testing.data$Terex, predicted.returns)
+names(model.test) <- c("Actual Return", "Predicted Return")
+head(round(model.test,3))
+plot(model.test, legend.loc = "topright", main = "Daily Return")#Visually we can see that this is a very poor model. 
+```
+
+
+
