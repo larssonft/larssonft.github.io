@@ -1,0 +1,14 @@
+name: "my-website"
+navbar:
+  title: "My Website"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "CV"
+      href: CV/CV.pdf
+    - text: "Fama French"
+      href: fama_french.html
+    - text: "Event Study"
+      href: event_study.html
+    - text: "Portfolio Optimization"
+      href: portfolio_optimization.html
