@@ -1,128 +1,224 @@
 ---
-title: "Event Study - Project"
+title: "Equifax - Event Study"
 author: "Fredrik Larsson"
-date: "December 28, 2019"
+date: "June 17, 2020"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-### Description:
-For this particular project, I will investigate whether insider trading occured prior to the announcement of LVMH acquring Tiffany and whether the market follows semi-strong market efficieny theory.
 
-The benchmark model that I will be using is CAPM. 
+### Abstract
+Conduct an event study to study whether the data breach of Equifax 2017 involved insider trading, abnormal market behavior (deviating from Efficient Market Hypothesis), and structural changes in the stock price.
 
-### Comments:
-This is a simple form of event study that can be improved in numerous ways, such as implementing a benchmark with more factors (Fama-French) and calculating the standard error of each individual day.
+### Packages
+1. quantmod
+2. dygraphs
+3. forecast
+4. vars
+5. tseries
 
-An event study alone is insufficient to determine insider trading; it should serve as an indicator.
-
-
-### Libraries: 
-#Tidyquant; Performance Analytics; xts.
-```{r, include = FALSE}
-library(tidyquant)
-library(PerformanceAnalytics)
-library(xts)
+```{r, include=FALSE}
+library(quantmod)
+library(dygraphs)
+library(forecast)
+library(vars)
+library(tseries)
 ```
 
-### Download and Fix Data
-October 25th (after market close) LVMH announced that it will acquire Tiffany at USD135 per share, indicating that Tiffany stock price should be close to USD135 immediately when the market opens.
-```{r}
-stock <- "TIF" #Stock Ticker
-market <- "SPY" #Market Ticker (Other alternatives might be ETFs focusing on NYSE or NASDAQ)
-event_date <- "2019-10-25" #Date: YYYY-MM-DD
-beg_date <- date(event_date)-150 #150 = Number of trading days before event to create benchmark.  
-end_date <- date(event_date)+15 #15 = Number of trading days after event.
-period <- "daily" #Periodicity
+### Import and Fix Data
+After the announcement of the data breach, multiple noticeable events occurred as a direct result (arguably both positive and negative in respect to stock return). For example, the retirement of the CEO could be viewed as positive event, as it showcased that the board of Equifax had zero tolereance toward insider trading & corporate negligence.
 
-stock_data <- getSymbols.yahoo(Symbols = stock,
-                                   env = .GlobalEnv,
-                                   return.class = "xts",
-                                   index.class = "Date",
-                                   from = beg_date,
-                                   to = end_date,
-                                   periodicity = period)
-                               
-market_data <- getSymbols.yahoo(Symbols = market, #The downloading of the stock data can be consolidated.
-                                   env = .GlobalEnv,
-                                   return.class = "xts",
-                                   index.class = "Date",
-                                   from = beg_date,
-                                   to = end_date,
-                                   periodicity = period)
+Therefore, I will seperate events into two groups: positive news and negative news. 
 
-#Fix and clean data set. 
-data <- cbind.xts(TIF$TIF.Adjusted, SPY$SPY.Adjusted) #Combine
-names(data) <- c("TIF", "SPY") #Name Columns
-data <- ROC(data) #Convert Adjusted Prices to Daily Returns (ROC = Rate of Change)
-data <- na.omit(data) #Remove any NA/empty rows. 
-head(data)
-chart.CumReturns(data, wealth.index = TRUE, main = "Cumulative Returns: Training + Testing Periods", legend.loc = "topleft") #Graph to illustrate TIF returns relatively to SPY returns. 
-```
-
-### Create Benchmark Model: Regression
-Regression is based on 140 days before the announcement happened - 10 days. With this regression analysis, we will be able to create a CAPM model, which historically has explained ~70% of actual returns. Conventionally, you remove the risk free rate from ri and rm, but that is not as important when doing an event study.  
+$$Formula$$
+$$R_t = \ln \frac {P_t}{P_{t-1}} = \ln P_t - \ln P_{t-1}$$
 
 ```{r}
-regression_analysis <- lm(TIF ~ SPY, 
-                          data = data[1:(match(date(event_date), table = index(data))-10),])
-#We want to investigate whether there are any abnormal returns shortly before the event. Therefore, we remove 10 days prior to the announcement date (This is when we anticipate insider trading on a larger scale). 
+#Stock Data
+start.date <- "2016-12-01"
+end.date <- "2018-06-01"
+periodicity <- "daily"
 
-summary(regression_analysis)#Based on the t and p-values, we fail to reject the H0: intercept (alpha) = 0, but we have enough evidence to reject H0: beta = 0. Therefore, we can create a model that states Ri = Beta * Rm.
+stock.list <- c("EFX")
 
-beta <- regression_analysis$coefficients[2]
-alpha <- regression_analysis$coefficients[1]#Not to be used due to too low T-value.
+firm_stocks <- getSymbols.yahoo(Symbols = stock.list,
+                                env = .GlobalEnv,
+                                return.class = "xts",
+                                index.class = "Date",
+                                from = start.date,
+                                to = end.date,
+                                periodicity = periodicity)
+
+
+#News variables - dates & explanation
+announcement.dates <- c("2017-09-07",
+                        "2017-09-11",#Announcement made a non-trading day. 
+                        "2017-09-15",
+                        "2017-09-26",
+                        "2017-10-02")
+
+announcement.explain <- c("Announces breach",
+                          "Tweets phishing site",
+                          "CSO & CIO retire",
+                          "CEO retires",
+                          "Announces more affected")
+
+#Dummy variables - if news occured after market closure, I moved it forward to the next trading day.
+negative.D <- c("2017-09-08",#Happened 2017-09-07
+                "2017-09-11",#Happened 2017-09-10
+                "2017-10-02")
+
+positive.D <- c("2017-09-18",#Announcement made after trading hours on 2017-09-15
+                "2017-09-26")
+
+#Create consolidated data frame with stock returns (Stock price being non-stationry (mean and variance))
+df <- cbind.xts(diff(log(EFX$EFX.Adjusted)),
+                as.integer(as.character(index(EFX)) %in% as.character(negative.D)),
+                as.integer(as.character(index(EFX)) %in% as.character(positive.D)))
+
+names(df) <- c("Return", "Negative.D", "Positive.D")
+head(df); subset(df, df$Negative.D == 1);subset(df, df$Positive.D == 1)#Print sample rows. 
 ```
 
-### Comparison: Model vs. Actual Returns
-Since we already know the future returns of the market (SPY), we will be utilizing ex-post forecasting, meaning that the independent variable (SPY) is given and not forecasted alongside the dependent variable (TIF).
+#### Graph Stock Price, Stock Volume, and Event Dates
+To get a better understanding of stock behavor during this series of events.
+```{r}
+dygraph(EFX[,5:6], xlab = "Date", ylab = "Stock Price", main = "Equifax Stock Price") %>%
+  dyRangeSelector(dateWindow = c("2017-08-15", "2017-10-31")) %>%
+  dyAxis("y", label = "Price", independentTicks = TRUE) %>%
+  dyAxis("y2", label = "Volume", independentTicks = TRUE, valueRange = c(0, (10**8))) %>%
+  dySeries("EFX.Volume", axis = ("y2")) %>%
+  dyRoller(rollPeriod = 1) %>%
+  dyEvent(announcement.dates, label = announcement.explain, col = "orange", labelLoc = "top") %>%
+  dyOptions(drawGrid = FALSE)%>%
+  dyLegend(width = 400)
+```
+
+### Create Benchmark Model: Fama-French 5 Factor Model
+With help of a benchmark model (which will be based on data from a period prior to the first even), we can calculate abnormal returns and their respective t-values to detect any potential insider trading or deviation from EMH.
+
+$$Formulas$$
+$$R_{EFX} - R_{rf} = \alpha + \beta_1 MRP + \beta_2 SMB + \beta_3 HML + \beta_4 RMW + \beta_5 CMA + \epsilon$$
+To estimate the coefficients of this model, I will be using an OLS regression (I assume that all 5/6 assumptions are met). 
+
+$$R_{Abnormal} = R_{Actual} - R_{Expected}$$
+$$t.value = \frac{R_{Abnormal}}{RSE}$$
 
 ```{r}
-comp.data <- cbind.xts(data[])#Combine Actual and Anticipated returns to one data frame.
-comp.data <- cbind.xts(tail(data[,1],nrow(data) - (match(date(event_date), table = index(data))-9)),
-                     ((tail(data[,2],nrow(data) - (match(date(event_date), table = index(data))-9)))*beta))
+#Import fama-french variables, downloaded from Fama's website. *Excel sheet is adjusted. 
+FF.factors <- read.csv("C:/Users/fredr/Desktop/webpage final/larssonft.github.io-master/F-F_Research_Data_5_Factors_2x3_daily.CSV")
+ff.df <- data.frame(df$Return, FF.factors[,2:7]/100); ff.df <- as.xts(ff.df)#/100 to convert to decimal form.
 
-names(comp.data) <- c("Actual", "Anticipated")
-plot(comp.data, main = "Daily Returns - Test Period", legend.loc = "topleft")
-#This Graph does not explain whether there were any abnormal returns.
+#Seperate data into training and testing sets so that the model does not account for large unexpected returns. 
+n.days <- 15#How many days before the first announcement should we study (important for insider trading)
+train.df <- subset(ff.df, as.character(index(ff.df)) < as.Date(announcement.dates[1]) - n.days)
+test.df <- subset(ff.df, as.character(index(ff.df)) > as.Date(announcement.dates[1]) - (n.days+1) &
+                    as.character(index(ff.df)) < as.Date(announcement.dates[5]) + n.days)
+
+#Create OLS model. To meet the 5/6 underlying assumptions for OLS regression, I will use returns (Stationarity).
+ff <- lm((Return - RF) ~ Mkt.RF + SMB + HML + RMW + CMA, data = train.df)
+summary(ff)#Only MRP is significantly different from 0; this model can only explain ~26% of variance in EFX Return.
+
+#Apply the estimated coefficients/model on the testing data to detect abnormal returns.
+comp.df <- cbind.xts(test.df$Return, #Actual Returns
+                     predict(ff, test.df) + test.df$RF, #Predicted Return (FF-5 Factor)
+                     test.df$Return -  predict(ff, test.df) + test.df$RF, #Abnormal Returns
+                     (test.df$Return -  predict(ff, test.df) + test.df$RF)/summary(ff)$sigma)#t-value Abnormal Return
+
+names(comp.df) <- c("Actual.R", "Expected.R", "Abnormal.R", "t.value")
+t.value <- 1.96#Alpha = .95
+
+#Extract dates with abnormal returns that are significantly different from 0 (i.e. absoulte t-value > 1.96).
+abnormal.dates <- subset(index(comp.df), abs(comp.df$t.value) > t.value) 
+
+#Graph stock price, event dates, and dates with abnormal returns. 
+dygraph(comp.df[,1:2], xlab = "Date", ylab = "Return", main = "Actual vs. Expected Returns") %>%
+  dyRangeSelector(dateWindow = c("2017-09-05", "2017-10-03")) %>%
+  dyRoller(rollPeriod = 1) %>%
+  dyEvent(announcement.dates, label = announcement.explain, col = "orange", labelLoc = "bottom") %>%
+  dyEvent(abnormal.dates, label = c("Abnormal", 2:length(abnormal.dates)), col = "purple", labelLoc = "bottom") %>%
+  dyOptions(drawGrid = FALSE)%>%
+  dyLegend(width = 400)
 ```
-### Abnormal Return Analysis.
-Abnormal returns will be based on t-test: (Actual Returns - Expected Returns)/Standard Error.
 
-#### Insider Trading:
-Expectation: Abnormal Returns the days after the announcement, since it was made at market close. Abnormal returns before would suggest insider trading. 
+Looking at the dates with abnormal returns, we failed to detect any potential insider trading. The CEO was, however, charged with insider trading as he unloaded his position in Equifax (~5M) prior to announcing the breach. I suspect that ~5M is insufficiently large to create any distortion in the stock price.
 
-#### Semi-Strong Market Efficiency Theory:
-Expectation: Only abnormal returns on the day after the announcement. Any adjustments thereafter should not occur unless new information arises. 
+On the other hand, it appears that EFX deviated from Efficient Market Hypothesis, as the market failed to react instantly to new information.
 
+### Fama-French 5 Factor Model + Dummy Variables
+Evidentially, the data breach had a significantly negative impact on the stock price. By using dummy variables, we can try to quantify the actual impact on the days when new information arises. In this scenario, we don't need to seperate the data into training and testing sets, as we only want to measure the impact of the dummy variable. 
+
+$$Formula$$
+$$R_{EFX} - R_{rf} = \alpha + \beta_1 MRP + \beta_2 SMB + \beta_3 HML + \beta_4 RMW + \beta_5 CMA + \phi_1 D_N + \phi_2 D_P + \epsilon$$
 ```{r}
-t_value <- 1.96 #t-critical value with double tail with an alpha of 0.05 with infinite observations. This might need adjustments if the data-set is considerbly small.  
-residual_standard_error <- summary(regression_analysis)$sigma#Extract S.E. from regression model.
-abnormal_analysis <- cbind.xts(comp.data$Actual,
-                               comp.data$Anticipated,
-                               comp.data$Actual-comp.data$Anticipated,
-                               (comp.data$Actual-comp.data$Anticipated)/residual_standard_error)
-names(abnormal_analysis) <- c("R", #Actual Return;
-                              "E(R)", #Expected Return;
-                              "AR", #Abnormal Return;
-                              "t-AR") #t-value of Abnormal Return.
+ff.df <- data.frame(ff.df, df$Negative.D, df$Positive.D); ff.df <- as.xts(ff.df)#Add dummy variables
 
-round(abnormal_analysis,3)#Table of 
-abnormal_days <- subset(abnormal_analysis, abs(`t-AR`) > t_value)#Filter out days with no abnormal  
-abnormal_days
+ff.d <- lm(Return ~ Mkt.RF + SMB + HML + RMW + CMA + Negative.D + Positive.D, data = ff.df)
+summary(ff.d)
 ```
-### Conclusion:
-Disclosure: I have not looked at specific dates prior to or after the anouncement. These are speculations trying to explain any abnormal returns.
 
-2019-10-18: As an effort not to be acquired by LVHM, Tiffany might have tried to dilute its outstanding shares so that a potential take-over would become more difficult (Poison Pill). However, this must most likely be announced by the company. Moreover, the absolute t-value is relatively close to t-critical value, providing us with a false-positive. 
+Based on the estimated coefficients and their t-values, we can exepect that a similar negative event (and subsequent negative events) will generate a -7.5% return the same day. Subsequent positive events, however, are not significantly different from 0%, and thus cannot be estimated. 
 
-2019-10-24: A company can acquire up to 5% of shares before announcing an acqusition, so this would most likely be the case. However, it raises the question why LVMH would do it the day before and not successively over the period of a few weeks. If insider trading was the cause for the abnormal return, a few traders/funds/actors with insufficient funding to affect the market greatly purchased the stocks.
+### Impulse Response Function + Vector Autoregression
+Until this point, we have a rough estimate what will happen to the stock price on the dates of announcement. Nevertheless, our analysis fails to consider the long-run outcome. With help of IRF and VAR, we will try to estimate any structural changes to the stock price.  
 
-2019-10-28: The market acted accordingly to semi-strong market efficiency hypothesis.
+Firstly, I will analyze the stock price, and secondly, I will look at stock returns.
 
-2019-10-30: Market might have corrected itself as it overreacted to the announcement (this would be a violation to semi-strong market efficiency). Perhaps LVHM and Tiffany were unable to create anticipated synergies, justifying a decrease in price while S&P500 increased in value. However, as for 2019-10-18, the t-value is close to the t-critical value, so it might not be reliable.
+In reality, one should be careful with non-stationary variables (in this case, only return is a stationary variable).
 
-For 10/18 and 10/30, epsilon might be unusually large, explaining any abnormal returns. On average, we assume epsilon = 0. 
+<br/><br/>
+
+#### Stock Price
+Looking at the IRF graph, it appears to be a structural change to the stock price of about -$38 in the long-run.  
+```{r}
+df.price <- cbind.xts(EFX$EFX.Adjusted, df$Negative.D, df$Positive.D); names(df.price) <- c("Price", "N", "P")
+
+#VARselect(df.price, lag.max = 25)#16 Lags is the optimal model (Lowest AIC)
+VAR.price <- VAR(df.price, type = "const", p = 16)#p = # of lags
+
+IRF.price <- irf(VAR.price, impulse = c("N", "P"), cumulative = TRUE, n.ahead = 100)
+
+IRF.price.change <- data.frame(IRF.price$irf$N[,1], IRF.price$Lower$N[,1], IRF.price$Upper$N[,1],
+                               IRF.price$irf$P[,1], IRF.price$Lower$P[,1], IRF.price$Upper$P[,1])
+names(IRF.price.change) <- c("N.Price", "N.L", "N.H", "P.Price", "P.L", "P.H")
+
+IRF.price.change <- ts(IRF.price.change, start = 0, end = (nrow(IRF.price.change)-1))
+
+#For dygraph, I used a time-series (ts) object as xts requires specific dates. 
+dygraph(IRF.price.change, main = "Cumulative Change in Price", xlab = "Days after Event", ylab = "Price") %>%
+  dySeries(c("N.L", "N.Price", "N.H"), label = "Negative News", col = "red") %>%
+  dySeries(c("P.L", "P.Price", "P.H"), label = "Positive News", col = "green") %>%
+  dyRangeSelector() %>%
+  dyLegend(width = 400)
+```
+
+#### Stock Return
+The negative news appear to have an effect on the stock price up to 40 days after the announcement. Of course, this study did not cover all new events surrounding Equifax during this time.  
+```{r}
+df.return <- cbind.xts(df$Return, df$Negative.D, df$Positive.D); names(df.return) <- c("Return", "N", "P")
+df.return <- na.omit(df.return)
+
+#VARselect(df.return, lag.max = 25)#16 Lags is the optimal model (Lowest AIC)
+VAR.return <- VAR(df.return, type = "const", p = 16)#p = # of lags
+
+IRF.return <- irf(VAR.return, impulse = c("N", "P"), cumulative = FALSE, n.ahead = 50)
+
+IRF.return.change <- data.frame(IRF.return$irf$N[,1], IRF.return$Lower$N[,1], IRF.return$Upper$N[,1],
+                               IRF.return$irf$P[,1], IRF.return$Lower$P[,1], IRF.return$Upper$P[,1])
+
+names(IRF.return.change) <- c("N.Return", "N.L", "N.H", "P.Return", "P.L", "P.H")
+
+IRF.return.change <- ts(IRF.return.change, start = 0, end = (nrow(IRF.return.change)-1))
+
+#For dygraph, I used a time-series (ts) object as xts requires specific dates. 
+dygraph(IRF.return.change, main = "Return after Shock", xlab = "Days after Event", ylab = "Return") %>%
+  dySeries(c("N.L", "N.Return", "N.H"), label = "Negative News", col = "red") %>%
+  dySeries(c("P.L", "P.Return", "P.H"), label = "Positive News", col = "green") %>%
+  dyRangeSelector() %>%
+  dyLegend(width = 400)
+```
+
+
 

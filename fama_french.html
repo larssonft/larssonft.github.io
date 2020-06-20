@@ -177,12 +177,15 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">My Website</a>
+      <a class="navbar-brand" href="index.html"></a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
   <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="CV/CV.pdf">CV</a>
 </li>
 <li>
   <a href="fama_french.html">Fama French</a>
@@ -280,14 +283,14 @@ summary(regression) #These 3 factors can explain about 40% of variation in Terex
 ## 
 ## Residuals:
 ##       Min        1Q    Median        3Q       Max 
-## -0.151679 -0.008415  0.000868  0.009706  0.074903 
+## -0.151679 -0.008415  0.000868  0.009706  0.074902 
 ## 
 ## Coefficients:
 ##               Estimate Std. Error t value Pr(&gt;|t|)    
 ## (Intercept) -0.0003900  0.0006648  -0.587    0.558    
-## MRP          1.7289518  0.0881780  19.608  &lt; 2e-16 ***
-## HML          0.6794490  0.1572980   4.320 1.79e-05 ***
-## SMB          1.5371570  0.1768356   8.693  &lt; 2e-16 ***
+## MRP          1.7289548  0.0881781  19.608  &lt; 2e-16 ***
+## HML          0.6794450  0.1572981   4.319 1.79e-05 ***
+## SMB          1.5371556  0.1768360   8.693  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
@@ -295,10 +298,8 @@ summary(regression) #These 3 factors can explain about 40% of variation in Terex
 ## Multiple R-squared:  0.4087, Adjusted R-squared:  0.4062 
 ## F-statistic: 163.8 on 3 and 711 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre class="r"><code>accuracy(regression)</code></pre>
-<pre><code>##                         ME       RMSE        MAE      MPE     MAPE
-## Training set -6.599038e-20 0.01766081 0.01246183 33.80034 189.3361
-##                   MASE
-## Training set 0.7258859</code></pre>
+<pre><code>##                        ME       RMSE        MAE     MPE     MAPE      MASE
+## Training set 3.365955e-19 0.01766083 0.01246184 33.8022 189.3419 0.7258863</code></pre>
 </div>
 <div id="forecasting-ex-post-we-know-the-outcome-of-the-independent-variables" class="section level3">
 <h3>Forecasting: Ex Post (We know the outcome of the independent variables)</h3>
@@ -323,12 +324,12 @@ head(round(model.test,3))</code></pre>
 <pre class="r"><code>lagged.data &lt;- cbind.xts(data$Terex, lag(data[,2:4]))
 head(lagged.data)</code></pre>
 <pre><code>##                   Terex           MRP           HML          SMB
-## 2017-01-04  0.017590530            NA            NA           NA
-## 2017-01-05 -0.027536561  0.0058334552 -0.0029048361  0.009727893
-## 2017-01-06 -0.006757885 -0.0008896169 -0.0057541363 -0.007415638
-## 2017-01-09 -0.004880706  0.0034747403 -0.0065927791 -0.005129353
-## 2017-01-10  0.017340685 -0.0034012993 -0.0050970827 -0.002621108
-## 2017-01-11  0.007107410 -0.0000951600 -0.0004574371  0.006806801</code></pre>
+## 2017-01-04  0.017590481            NA            NA           NA
+## 2017-01-05 -0.027536544  0.0058336248 -0.0029047011  0.009727710
+## 2017-01-06 -0.006758020 -0.0008895232 -0.0057543994 -0.007415517
+## 2017-01-09 -0.004880616  0.0034745703 -0.0065927433 -0.005129261
+## 2017-01-10  0.017340703 -0.0034012013 -0.0050970362 -0.002621166
+## 2017-01-11  0.007107414 -0.0000951600 -0.0004573704  0.006806860</code></pre>
 <pre class="r"><code>lagged.data &lt;- na.omit(lagged.data)
 
 training.data &lt;- lagged.data[1:(nrow(data)-29),]
@@ -348,7 +349,7 @@ summary(regression) #The 3 factors lagged by 1 day can only explain about .6% of
 ##               Estimate Std. Error t value Pr(&gt;|t|)  
 ## (Intercept) -5.486e-05  8.602e-04  -0.064   0.9492  
 ## MRP          2.363e-02  1.141e-01   0.207   0.8360  
-## HML          5.207e-01  2.035e-01   2.558   0.0107 *
+## HML          5.206e-01  2.035e-01   2.558   0.0107 *
 ## SMB         -1.165e-01  2.288e-01  -0.509   0.6108  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
@@ -357,8 +358,8 @@ summary(regression) #The 3 factors lagged by 1 day can only explain about .6% of
 ## Multiple R-squared:  0.01032,    Adjusted R-squared:  0.006145 
 ## F-statistic: 2.472 on 3 and 711 DF,  p-value: 0.06068</code></pre>
 <pre class="r"><code>accuracy(regression)</code></pre>
-<pre><code>##                        ME       RMSE        MAE      MPE     MAPE     MASE
-## Training set 1.359044e-19 0.02285005 0.01717961 105.6688 117.2949 1.000419</code></pre>
+<pre><code>##                         ME       RMSE        MAE     MPE     MAPE     MASE
+## Training set -1.569961e-19 0.02285006 0.01717961 105.669 117.2976 1.000419</code></pre>
 <pre class="r"><code>predicted.returns &lt;- (regression$coefficients[3]*testing.data$HML)
 model.test &lt;- cbind.xts(testing.data$Terex, predicted.returns)
 names(model.test) &lt;- c(&quot;Actual Return&quot;, &quot;Predicted Return&quot;)

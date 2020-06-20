@@ -30,10 +30,12 @@ Considering the allocation of capital in a portfolio of assets is highly importa
 
 
 ```{r, echo = FALSE}
-thumbnail("Event Study", "event_study_files/figure-html/unnamed-chunk-2-1.png", "https://larssonft.github.io/event_study.html")
+thumbnail("Event Study", "images/event_study.PNG", "https://larssonft.github.io/event_study.html")
 ```
-Event study when LVMH announced that it will acquire Tiffany & Co. October 25th 2019 after market close. The study looks at whether insider trading might have occured prior to the announcement and whether the Tiffany stock conformed to semi-strong market hypothesis (as soon as new information arises, the market should adjust the price immediately). To measure abnormal returns, I used the CAPM model, which historically has explained ~70% of stock/portfolio movements. I conclude that there is insufficient evidence for insider trading and that markets follow semi-strong market hypothesis in this case.
+Event Study looking into how the data breach of Equifax 2017 affect the stock price. Various methods have been use in order to determine direct and long-term consequences. 
 
+<br/><br/>
+<br/><br/>
 <br/><br/>
 <br/><br/>
 <br/><br/>
